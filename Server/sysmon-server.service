@@ -1,0 +1,13 @@
+[Unit]
+Description=Hardware Monitor Server
+After= network.target redis.service
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/sysmon-server/Server.py runserver
+Restart=always
+User=sysmon
+Group=nogroup
+WorkingDirectory=/usr/local/bin/sysmon-server
+
+[Install]
+WantedBy=multi-user.target

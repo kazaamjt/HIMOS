@@ -1,0 +1,125 @@
+{% macro print_computer_full(computer) %}
+    Mainboard: {{ computer.mainboard }}
+    {{ print_entities("CPUs", computer.CPU, print_single_cpu) }}
+    {{ print_entities("HDDs", computer.HDD, print_single_hdd) }}
+    {{ print_entities("RAMs", computer.RAM, print_single_ram) }}
+
+{% endmacro %}
+
+{% macro print_computer_summary(computer) %}
+    {{ last_measurement_from(computer.time_now_utc, small_text=True,no_other_text=True) }}
+    {{ print_entities("CPUs", computer.CPU, print_single_cpu_summary) }}
+    {{ print_entities("HDDs", computer.HDD, print_single_hdd_summary) }}
+    {{ print_entities("RAMs", computer.RAM, print_single_ram) }}
+{% endmacro %}
+
+
+{% macro print_single_cpu_summary(cpu) %}
+    {{ print_single_cpu(cpu, verbose=False) }}
+{% endmacro %}
+
+{% macro print_single_hdd_summary(hdd) %}
+    {{ print_single_hdd(hdd, verbose=False) }}
+{% endmacro %}
+
+
+{% macro print_single_cpu(cpu, verbose=True) %}
+    {{ print_component_name(cpu, verbose=verbose) }}
+    <ul>
+        <li>
+            Temperature: {{ cpu.temperature }}
+        </li>
+        <li>
+            Load: {{ format_float(cpu.load) }}
+        </li>
+
+        {% if verbose %}
+            <li>
+                {% for core in cpu.cores %}
+                    {% set attributes = [
+                ('Temperature', core.temperature),
+                ('Load', format_float( core.load))
+                ] %}
+                    {{ print_single_hardware_component(core, attributes) }}
+                {% endfor %}
+            </li>
+        {% else %}
+
+        {% endif %}
+    </ul>
+{% endmacro %}
+
+
+{% macro print_single_hdd(hdd, verbose=True) %}
+    {% set attributes = [
+    ('Used space', format_float(hdd.used_space)),
+    ] %}
+    {% if verbose %}
+        {% do attributes.append(('Temperature', format_float(hdd.temperature))) %}
+    {% endif %}
+
+    {{ print_single_hardware_component(hdd, attributes) }}
+{% endmacro %}
+
+{% macro print_single_ram(ram) %}
+    {% set attributes = [
+    ('Used memory', format_float(ram.used_memory)),
+    ('All memory', format_float(ram.used_memory + ram.unused_memory)),
+    ] %}
+
+    {{ print_single_hardware_component(ram, attributes) }}
+{% endmacro %}
+
+
+
+
+{% macro print_entities(name, entities, print_single_entity) %}
+    <h5>{{ name }}</h5>
+    <ul>
+        {% for entity in entities %}
+            <li>
+                {{ print_single_entity(entity) }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro print_single_hardware_component(component, attributes) %}
+    {{ print_component_name(component, verbose=verbose) }}
+    <ul>
+        {% for attr_name, attr_val in attributes %}
+            <li>{{ attr_name }}: {{ attr_val }}</li>
+
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro last_measurement_from(timestamp_str, small_text=True,no_other_text=False, dead=False) -%}
+    {% set moment_obj = momentjs(str_to_datetime(timestamp_str)) %}
+    {% set tag = "small" if small_text else "span" %}
+    <{{ tag }} title="UTC: {{ timestamp_str }}" style="{{'color:red;' if dead else ''}}">
+    {% set text = '' %}
+    {% if no_other_text %}
+    {% else %}
+        {% set text ='Updated at: ' %}
+    {% endif %}
+    {{ text }} {{ moment_obj.calendar() }} ({{ moment_obj.fromNow() }})
+    </{{ tag }}>
+{% endmacro %}
+
+{% macro print_component_name(component, verbose=False) %}
+    <strong>{{ component.name }}</strong>
+    {% if verbose %}
+        ({{ component.identifier }})<br>
+    {% endif %}
+{% endmacro %}
+
+
+{%macro make_node_link(hostname, dead=False, add_icon=True) %}
+       <a href="{{ url_for('dashboard.node_info', node_identifier=hostname) }}"
+        style="{{'color:red;' if dead else ''}}">{{ hostname }}
+        {%if add_icon %}
+            <span class="fa fa-external-link"></span>
+        {%endif%}
+       </a>
+{%endmacro%}

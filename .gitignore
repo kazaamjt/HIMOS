@@ -1,0 +1,8 @@
+.idea/*
+*.pyc
+__pycache__
+.vs
+dist
+docker-compose.yaml
+OpenHWmonitorDLL/obj/*
+Server/app/static/js/lib/underscore-min.map

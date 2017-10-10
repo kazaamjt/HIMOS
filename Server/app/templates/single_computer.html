@@ -1,0 +1,43 @@
+{% import 'computer_print_macros.html' as computer_macro %}
+{% import 'macros.html' as macro %}
+{% extends 'base.html' %}
+
+{% block title %}
+<div {%if is_dead %}
+    style="color:red"
+    {%endif%}>
+    {{computer.hostname}}
+</div>
+{% endblock %}
+
+
+
+
+{% block page_description %}
+    {{ super() }}
+    <br>
+    {{ computer_macro.last_measurement_from(computer.time_now_utc, small_text=True, dead=is_dead) }}
+
+{% endblock %}
+
+
+{% block content %}
+    <div class="well">
+        {{ computer_macro.print_computer_full(computer) }}
+    </div>
+    <h1>Previous measurements</h1>
+    {% for old_computer in older_computers %}
+
+        {% set timestamp = computer_macro.last_measurement_from(old_computer.time_now_utc,small_text=False) %}
+        {% call macro.make_panel(name=timestamp) %}
+            {{ computer_macro.print_computer_summary(computer) }}
+        {% endcall %}
+
+    {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/refresh_page.js') }}"></script>
+
+{% endblock %}

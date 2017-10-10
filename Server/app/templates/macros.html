@@ -1,0 +1,96 @@
+{% macro make_panel(name, id, width=12, style='default', fa_icon='') %}
+    <div class="row">
+        <div class="col-md-{{ width }}">
+            <div class="panel panel-{{ style }}" data-target="{{id}}">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        {% if fa_icon -%}
+                            <i class="fa {{ fa_icon -}}"></i>
+                        {% endif %}
+                        {{ name }}
+                        <button class="btn btn-default btn-xs pull-right btn-collapse" href="#"
+                                type="button" data-toggle="collapse" data-target="#{{ id }}" data-body-id="{{ id }}"
+                                aria-expanded="false" aria-controls="{{ id }}">
+                            -
+                        </button>
+                    </h3>
+                </div>
+                <div class="panel-body collapse in" id="{{ id }}">
+                    {{ caller() }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% macro make_link_btn(link, text, color='primary',size='btn-xs', new_page=False, extra_class="", extra_attrs="") %}
+    {# given a link and text, make a bootstrap button #}
+    <a class="btn btn-{{ color }} {{ size }} {{ extra_class }}" href="{{ link }}" role="button"
+       target="{{ '_blank' if new_page else '_self' }}" {{ extra_attrs }}>{{ text }}</a>
+{% endmacro %}
+
+
+{% macro fa_icon(name, margin_left=0, margin_right=5) %}
+    {#
+    output font awesome icon
+
+    :attr name - fa icon, as shown on their site. http://fontawesome.io/icons/
+    #}
+    <i class="fa fa-{{ name }}" aria-hidden="true"
+       style="margin-right: {{ margin_right }}px; margin-left: {{ margin_left }}px"></i>
+{% endmacro %}
+
+
+{% macro flash_messages() %}
+    {# if in a view function, flash() has been used, use this macro to show the messages it   #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category | default('info',true) }}">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+{% endmacro %}
+
+
+{% macro table(headers = [], extra_class="") -%}
+    {#
+    Example usage:
+    {% call table(headers=['id','username']) %}
+        {% for u in user_array %}
+            {% print_row([u.id, u.name]) %}
+        {% endfor %}
+{% endcall %}
+#}
+    <table class="table table-striped {{ extra_class }}">
+        {% if headers %}
+            <thead>
+            <tr>
+                {% for header in headers %}
+                    <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+        {% endif %}
+        <tbody>
+        {{ caller() }}
+        </tbody>
+    </table>
+{%- endmacro %}
+
+{% macro print_row(row = [],row_class='', row_style="") %}
+    {# used together with the table macro   #}
+
+    <tr class="{{ row_class }}" , style="{{ row_style }}">
+        {% for row_element in row %}
+            <td>
+                {{ row_element }}
+            </td>
+        {% endfor %}
+    </tr>
+{%- endmacro %}
+
+

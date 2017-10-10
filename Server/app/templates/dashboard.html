@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import 'macros.html' as macro %}
+{% import 'computer_print_macros.html' as computer_macro %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+
+
+
+{% block content %}
+
+{% call  macro.make_panel("Hosts", id='hosts', style='danger' if dead_host_names else 'primary') %}
+{% for host_name, computer in computers %}
+
+<div class="col-md-2">
+    <div class="row">
+        <strong>{{computer_macro.make_node_link(host_name, host_name in dead_host_names)}}</strong>
+    </div>
+    <div class="row">
+        {{ computer_macro.last_measurement_from(computer.time_now_utc, dead=host_name in dead_host_names) }}
+    </div>
+</div>
+
+
+{% endfor %}
+{% endcall %}
+
+
+<div class="row fix-different-heights"> <!--https://stackoverflow.com/a/42166932/4509634-->
+    {% for hostname, computer in computers %}
+    <div class="col-lg-3">
+        {%set host_is_dead = hostname in dead_host_names %}
+        {%set panel_name = computer_macro.make_node_link(hostname) %}
+        {% call macro.make_panel(panel_name,id=hostname, style='danger' if host_is_dead else 'default', fa_icon='fa
+        fa-warning' if host_is_dead else '' ) %}
+        {{ computer_macro.print_computer_summary(computer) }}
+        {% endcall %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts -%}
+{{ super() }}
+<script type="text/javascript" src="{{ url_for('static', filename='js/refresh_page.js') }}"></script>
+{% endblock %}

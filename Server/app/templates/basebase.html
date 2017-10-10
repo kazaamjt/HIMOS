@@ -1,0 +1,41 @@
+{% extends "bootstrap/base.html" %}
+{% import 'macros.html' as macro %}
+
+{% block title %}
+    {{ config['SITE_NAME'] }}
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    {%set theme = session.get('theme', 'light') %} {#default to light #}
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"
+       type="text/css">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/theme/%s.css' % theme) }}"/>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/underscore-min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/moment-with-locales.min.js') }}"></script>
+
+{% endblock %}
+
+
+
+{% block body %}
+
+
+    {% block site_content %}
+        {% block content %}
+
+        {% endblock %}
+    {% endblock %}
+
+    {% block footer %}
+
+    {% endblock %}
+
+    {% block scripts %}
+        {{ super() }}
+
+    {% endblock %}
+
+{% endblock %}

@@ -1,0 +1,4 @@
+pythonnet==2.3.0
+requests==2.18.1
+jsonpickle==0.9.5
+servicemanager==1.0.0

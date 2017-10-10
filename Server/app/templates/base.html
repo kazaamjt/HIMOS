@@ -1,0 +1,152 @@
+{% extends "basebase.html" %}
+{% import 'macros.html' as macro %}
+
+{% block styles -%}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock -%}
+
+
+
+{% block auto_reload_bar %}
+    {# magic. define a global variable, which will be accessible from refresh_page.js #}
+    <script>
+                        {% if  should_refresh_page_flag != undefined %}
+                            SHOULD_REFRESH_PAGE_INITIAL_FLAG =
+                            {{  should_refresh_page_flag | tojson }};
+                        {% else %}
+                            console.warn(`page supports auto-reloading but should_refresh_page_flag is not set.
+                            you need to wrap the view python function with the auto_reloadable()  decorator. http://exploreflask.com/en/latest/views.html#custom-decorators`);
+                        {% endif %}
+
+    </script>
+
+
+    <li><span class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-primary btn-xs  {{ 'active' if should_refresh_page_flag else '' }}"
+                                   id="enable-refreshing-btn">
+                                <input type="radio" name="options" autocomplete="off">On</label>
+                            <label class="btn  btn-primary btn-xs {{ '' if should_refresh_page_flag else 'active' }}"
+                                   id="disable-refreshing-btn">
+                                <input type="radio" name="options"
+                                       autocomplete="off">Off</label>
+                        </span>
+        <select id="auto-refresh-intervals" class="btn btn-default btn-xs dropdown-toggle">
+
+            {% for refresh_interval_option in refresh_interval_options %}
+            {% set value = refresh_interval_option[0] %}
+            {% set value_show = refresh_interval_option[1] %}
+
+            {% if value == refresh_interval_seconds %}
+            {% set flag_selected = 'selected="selected"' %}
+            {% else %}
+            {% set flag_selected = '' %}
+            {% endif %}
+
+            <option {{ flag_selected }} value={{ value }}>{{ value_show }}</option>
+            {% endfor %}
+
+        </select>
+    </li>
+
+{% endblock %}
+
+{% block settings %}
+
+    <li class="dropdown dropdown-menu-click-no-hide dropdown-menu-left">
+        <a id='settings-btn' class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#"><span
+                class="fa fa-gear fa-5"></span> <b class="caret"></b></a>
+
+        <ul class="dropdown-menu" aria-labelledby="settings-btn">
+            <li><a href="#" class="btn panels-show-btn">Expand panels <span
+                        class="fa fa-arrows-alt"></span></a>
+            </li>
+            <li><a href="#" class="btn panels-collapse-btn">Shrink panels <span
+                        class="fa fa-compress"></span></a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li class="dropdown-header">Theme</li>
+            <!--should match a file name in /static/css/match -->
+            <li><span><a class='btn change-theme-btn' data-theme='light' href="#">Light</a></span></li>
+            <li><span><a class='btn change-theme-btn' data-theme="dark" href="#">Dark</a></span></li>
+            <li role="separator" class="divider"></li>
+            {% if page_is_autoreloadable is defined %}
+                <li class="dropdown-header">Autoreload</li>
+                {{ self.auto_reload_bar() }}
+            {% endif %}
+
+        </ul>
+    </li>
+
+{% endblock %}
+
+
+{% block site_content %}
+<div id="collapsed-by-default-elements" data-ids='{{ get_collapsed_ids() | tojson}}'></div>
+
+<div id="page-wrapper">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse"
+                    data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">{{ config['SITE_NAME'] }}</a>
+        </div>
+
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            {% block top_nav %}
+
+            <ul class="nav navbar-nav navbar-left">
+                <li><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('admin.manage') }}">Manage</a></li>
+                <li class="divider-vertical"></li>
+                <li><a href="#"><small>Redis status: <strong><span id="redis_status_short">...</span></strong></small></a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                {{self.settings()}}
+            </ul>
+            {% endblock %}
+
+        </div>
+
+
+    </nav>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>{% block page_title %}
+                {{ self.title() }}
+                {% endblock %}
+                <small>
+                    {% block page_description_wrap %}
+                    {% block page_description %}
+                    {% endblock %}
+                    {% endblock %}
+                </small>
+            </h1>
+            {{ macro.flash_messages() }}
+
+        </div>
+    </div>
+
+    {% block content %}
+
+    {# use this block to put your content in extending templates #}
+
+    {% endblock %}
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript" src="{{ url_for('static', filename='js/site_wide.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/collapse.js') }}"></script>
+
+{% endblock %}

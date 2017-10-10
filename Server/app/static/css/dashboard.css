@@ -1,0 +1,13 @@
+.btn:focus, .btn:active, .btn:visited {
+    outline: none !important;
+    box-shadow: none !important;
+    border-width: 0 !important;
+}
+
+/*
+https://stackoverflow.com/a/42166932/4509634
+*/
+.row.fix-different-heights{
+  display: flex;
+  flex-wrap: wrap;
+}

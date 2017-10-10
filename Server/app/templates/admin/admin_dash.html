@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% import 'macros.html'  as macro %}
+{% import 'computer_print_macros.html' as computer_macro %}
+
+{% block title %}
+    Manage Hardware Monitor
+{% endblock %}
+
+
+{% block content %}
+
+    {% call macro.make_panel("Server config",id='monitored-hosts-panel', style='default') %}
+        {%call macro.table(headers=['Setting', 'Value']) %}
+            {%for conf_name, conf_val in server_settings.items() %}
+                {{ macro.print_row([conf_name, conf_val]) }}
+            {% endfor %}
+        {%endcall%}
+    {%endcall%}
+
+
+
+
+    {% call macro.make_panel("Monitored hosts",id='monitored-hosts-panel', style='primary') %}
+        {% call macro.table(headers=['Host name','Last updated', 'Forget host', 'Delete host readings']) %}
+            {% for host in all_host_names %}
+                {% set delete_btn = macro.make_link_btn("#%s"%host, 'x', color='danger', extra_class='delete-host-readings-btn', extra_attrs='data-host=%s'%host) %}
+                {% set forget_btn = macro.make_link_btn("#%s"%host, 'x', color='warning', extra_class='forget-host-btn', extra_attrs='data-host=%s'%host) %}
+                {% set newest_measurement_time = computer_macro.last_measurement_from(newest_measurement_from[loop.index0],no_other_text=True) %}
+                {% set host_info = '<a href="'+url_for('dashboard.node_info', node_identifier=host) + '">'+ host +'</a>' %}
+
+                {{ macro.print_row([host_info|safe,newest_measurement_time|safe, forget_btn|safe, delete_btn|safe]) }}
+            {% endfor %}
+        {% endcall %}
+    {% endcall %}
+
+    {% call macro.make_panel("Forgotten hosts",id='monitored-hosts-panel', style='default') %}
+        {% call macro.table(headers=['Host name','Start monitoring again']) %}
+            {% for host in forgotten_hosts %}
+                {% set unforget_btn = macro.make_link_btn("#%s"%host, 'x', color='default', extra_class='unforget-host-btn',  extra_attrs='data-host=%s'%host) %}
+                {{ macro.print_row([host, unforget_btn|safe]) }}
+            {% endfor %}
+
+        {% endcall %}
+    {% endcall %}
+
+
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+
+{% endblock %}
